@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Track income, expenses, budgets and monthly spending in one place." />
+  <title>Simple Expense Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <main id="authView" class="auth-shell">
+    <section class="auth-brand">
+      <div class="brand-mark">₹</div>
+      <p class="eyebrow">PERSONAL FINANCE, MADE CLEAR</p>
+      <h1>Make every<br><span>rupee count.</span></h1>
+      <p class="muted">Understand your spending, build better habits, and stay in control of your money.</p>
+      <div class="auth-points"><span>✓ Simple tracking</span><span>✓ Monthly insights</span><span>✓ Private account</span></div>
+    </section>
+    <section class="auth-card">
+      <div class="auth-tabs"><button class="tab active" data-auth-tab="login">Login</button><button class="tab" data-auth-tab="register">Create account</button></div>
+      <form id="loginForm" class="auth-form">
+        <h2>Welcome back</h2><p class="muted">Sign in to view your finances.</p>
+        <label>Email address<input name="email" type="email" placeholder="you@example.com" required autocomplete="email"></label>
+        <label>Password<input name="password" type="password" placeholder="Enter your password" required autocomplete="current-password"></label>
+        <button class="btn primary full" type="submit">Login to dashboard</button>
+      </form>
+      <form id="registerForm" class="auth-form hidden">
+        <h2>Create your account</h2><p class="muted">Start tracking your money today.</p>
+        <label>Full name<input name="name" type="text" placeholder="Your name" required minlength="2" maxlength="60" autocomplete="name"></label>
+        <label>Email address<input name="email" type="email" placeholder="you@example.com" required autocomplete="email"></label>
+        <label>Password<input name="password" type="password" placeholder="At least 8 characters" required minlength="8" maxlength="72" autocomplete="new-password"></label>
+        <button class="btn primary full" type="submit">Create account</button>
+      </form>
+      <p class="auth-note">Your transactions are stored in your own account.</p>
+    </section>
+  </main>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <a class="brand" href="#"><span class="brand-mark small">₹</span><span>SpendWise<small>EXPENSE TRACKER</small></span></a>
+      <p class="nav-label">WORKSPACE</p>
+      <button class="nav-link active" data-page="overview"><span>▦</span> Overview</button>
+      <button class="nav-link" data-page="transactions"><span>⇄</span> Transactions</button>
+      <button class="nav-link" data-page="budgets"><span>◷</span> Budgets</button>
+      <div class="sidebar-bottom"><div class="user-chip"><div class="avatar" id="userAvatar">U</div><div><strong id="userName">User</strong><small id="userEmail"></small></div></div><button id="logoutBtn" class="nav-link logout"><span>↪</span> Log out</button></div>
+    </aside>
+    <section class="main-area">
+      <header class="topbar"><div><p class="eyebrow">YOUR MONEY, AT A GLANCE</p><h1 id="pageTitle">Overview</h1></div><div class="top-actions"><input id="monthPicker" type="month" aria-label="Select month"><button class="btn primary" id="addTopBtn">＋ Add transaction</button></div></header>
+      <section id="overviewPage" class="page">
+        <div class="welcome-row"><div><h2 id="welcomeText">Good day 👋</h2><p class="muted">Here is your financial snapshot for the selected month.</p></div><button class="btn secondary" id="exportBtn">↓ Export CSV</button></div>
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><span>Total balance</span><span class="stat-icon violet">₹</span></div><strong id="balanceValue">₹0.00</strong><small>Income minus expenses this month</small></article>
+          <article class="stat-card"><div class="stat-top"><span>Total income</span><span class="stat-icon green">↗</span></div><strong id="incomeValue">₹0.00</strong><small class="positive">Money coming in</small></article>
+          <article class="stat-card"><div class="stat-top"><span>Total expenses</span><span class="stat-icon orange">↘</span></div><strong id="expenseValue">₹0.00</strong><small class="negative">Money going out</small></article>
+        </div>
+        <div class="content-grid"><article class="panel chart-panel"><div class="panel-heading"><div><h3>Spending by category</h3><p class="muted">Where your money went this month</p></div></div><div class="chart-wrap"><canvas id="categoryChart"></canvas><p id="chartEmpty" class="empty-chart hidden">Add expenses to see your category breakdown.</p></div></article>
+        <article class="panel"><div class="panel-heading"><div><h3>Quick insight</h3><p class="muted">A simple monthly check-in</p></div></div><div class="insight-box"><span class="insight-icon">✦</span><p id="insightText">Add transactions to unlock your monthly insight.</p></div><div class="mini-summary"><div><span>Transactions</span><strong id="transactionCount">0</strong></div><div><span>Savings rate</span><strong id="savingsRate">0%</strong></div></div></article></div>
+        <article class="panel"><div class="panel-heading"><div><h3>Recent transactions</h3><p class="muted">Your latest money activity</p></div><button class="text-btn" data-go="transactions">View all →</button></div><div id="recentList" class="transaction-list"><p class="muted">No transactions yet.</p></div></article>
+      </section>
+      <section id="transactionsPage" class="page hidden">
+        <div class="page-tools"><input id="searchInput" type="search" placeholder="Search category or description…"><select id="typeFilter"><option value="">All types</option><option value="income">Income</option><option value="expense">Expense</option></select></div>
+        <article class="panel"><div class="panel-heading"><div><h3>All transactions</h3><p class="muted">Up to 500 latest records</p></div></div><div id="transactionTable"></div></article>
+      </section>
+      <section id="budgetsPage" class="page hidden">
+        <div class="welcome-row"><div><h2>Plan your spending</h2><p class="muted">Set category limits and keep an eye on your monthly expenses.</p></div></div>
+        <article class="panel budget-form-panel"><form id="budgetForm" class="budget-form"><label>Category<input name="category" placeholder="e.g. Food" maxlength="40" required></label><label>Monthly limit (₹)<input name="monthly_limit" type="number" min="1" step="0.01" placeholder="5000" required></label><button class="btn primary" type="submit">＋ Set budget</button></form></article>
+        <div id="budgetList" class="budget-grid"></div>
+      </section>
+    </section>
+  </div>
+
+  <dialog id="transactionDialog" class="modal">
+    <form id="transactionForm" method="dialog">
+      <div class="modal-heading"><div><p class="eyebrow">MONEY ACTIVITY</p><h2 id="modalTitle">Add transaction</h2></div><button type="button" class="icon-btn" id="closeModal" aria-label="Close">×</button></div>
+      <input type="hidden" name="id">
+      <label>Transaction type<select name="type" required><option value="expense">Expense</option><option value="income">Income</option></select></label>
+      <label>Amount (₹)<input name="amount" type="number" min="0.01" max="100000000" step="0.01" required placeholder="0.00"></label>
+      <label>Category<select name="category" required><option>Food</option><option>Transport</option><option>Shopping</option><option>Bills</option><option>Health</option><option>Education</option><option>Entertainment</option><option>Salary</option><option>Freelance</option><option>Investment</option><option>Other</option></select></label>
+      <label>Date<input name="date" type="date" required></label>
+      <label>Description <span class="muted">(optional)</span><input name="description" maxlength="200" placeholder="What was this for?"></label>
+      <div class="modal-actions"><button type="button" class="btn secondary" id="cancelModal">Cancel</button><button type="submit" class="btn primary">Save transaction</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
