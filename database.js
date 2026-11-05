@@ -7,23 +7,28 @@ types.setTypeParser(1700, val => (val === null ? null : parseFloat(val)));
 types.setTypeParser(20, val => (val === null ? null : parseInt(val, 10)));
 
 let activePool = null;
-
 function createPool() {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    console.warn('⚠️  DATABASE_URL environment variable is not defined.');
-    return null;
+    throw new Error('DATABASE_URL is not defined.');
   }
 
-  const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+  const fs = require('fs');
+  const path = require('path');
+
+  const ca = process.env.DB_CA_CERT ||
+    fs.readFileSync(path.join(__dirname, 'ca.pem'), 'utf8');
 
   return new Pool({
     connectionString,
-    ssl: isLocalhost ? false : { rejectUnauthorized: false },
+    ssl: {
+      ca,
+      rejectUnauthorized: true
+    },
     max: process.env.NODE_ENV === 'production' ? 10 : 5,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 10000
   });
 }
 
