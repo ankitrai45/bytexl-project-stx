@@ -7,30 +7,39 @@ types.setTypeParser(1700, val => (val === null ? null : parseFloat(val)));
 types.setTypeParser(20, val => (val === null ? null : parseInt(val, 10)));
 
 let activePool = null;
+
 function createPool() {
   const connectionString = process.env.DATABASE_URL;
+  const ca = process.env.DB_CA_CERT;
 
   if (!connectionString) {
-    throw new Error('DATABASE_URL is not defined.');
+    throw new Error("DATABASE_URL is missing.");
   }
 
-  const fs = require('fs');
-  const path = require('path');
+  if (!ca) {
+    throw new Error("DB_CA_CERT is missing.");
+  }
 
-  const ca = process.env.DB_CA_CERT ||
-    fs.readFileSync(path.join(__dirname, 'ca.pem'), 'utf8');
+  const url = new URL(connectionString);
+
+  // Remove conflicting SSL parameters
+  url.searchParams.delete("sslmode");
+  url.searchParams.delete("sslrootcert");
+  url.searchParams.delete("sslcert");
+  url.searchParams.delete("sslkey");
 
   return new Pool({
-    connectionString,
+    connectionString: url.toString(),
     ssl: {
-      ca,
+      ca: ca,
       rejectUnauthorized: true
     },
-    max: process.env.NODE_ENV === 'production' ? 10 : 5,
+    max: 5,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000
+    connectionTimeoutMillis: 15000
   });
 }
+
 
 function getPool() {
   if (!activePool) {
